@@ -1,10 +1,7 @@
-from enum import Enum
 import random
+from localTypes import Direction
 
-class Direction(Enum):
-    ASCENDING = 1
-    DESCENDING = 2
-    STRAIGHT = 3
+
 
 
 class GroupingModule:
@@ -17,6 +14,8 @@ class BaseGroup:
         self.numBeats = numBeats
         self.dir = dir
         self.notes = []
+        self.suggestedChords = []
+        self.octaves = []
 
 class PhraseGroup:
     def __init__(self, numGroups: int, contour: list[Direction]) -> None:
@@ -43,7 +42,14 @@ class SectionGroup:
 
     def flatten(self):
         notes = []
+        octaves = []
         for phraseGroup in self.groups:
             for baseGroup in phraseGroup.groups:
                 notes += baseGroup.notes
-        return notes
+                octaves += baseGroup.octaves
+        return notes, octaves
+
+    def groupDescent(self, baseGroupMethod):
+        for phraseGroup in self.groups:
+            for baseGroup in phraseGroup.groups:
+                baseGroupMethod(baseGroup)

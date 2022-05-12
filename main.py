@@ -1,4 +1,6 @@
+import copy
 from groupingModule import SectionGroup
+from harmonyModule import HarmonyModule
 from melodyModule import MelodyModule, Voice, VoiceGroup
 from midiModule import getStream
 from music21 import stream
@@ -11,21 +13,25 @@ def main():
 
     compositionS = SectionGroup(3)
     MelodyModule(compositionS, soprano)
-    compositionA = SectionGroup(3)
+
+    compositionA = copy.deepcopy(compositionS)
+    HarmonyModule(compositionA, alto)
+    """"
     MelodyModule(compositionA, alto)
     compositionT = SectionGroup(3)
     MelodyModule(compositionT, tenor)
     compositionB = SectionGroup(3)
     MelodyModule(compositionB, bass)
+    tenorStream = getStream(compositionT)
+    bassStream = getStream(compositionB)
+    s = stream.Stream([sopranoStream, altoStream, tenorStream, bassStream])
+    """
 
     sopranoStream = getStream(compositionS)
     altoStream = getStream(compositionA)
-    tenorStream = getStream(compositionT)
-    bassStream = getStream(compositionB)
-
-    s = stream.Stream([sopranoStream, altoStream, tenorStream, bassStream])
+    s = stream.Stream([sopranoStream, altoStream])
     s.show()
-    
+
 if __name__ == '__main__':
     main()
 

@@ -19,7 +19,8 @@ class MidiModule:
 
 def getStream(composition: SectionGroup):
     s = stream.Stream()
-    for degree, octave in composition.flatten():
+    degrees, octaves = composition.flatten()
+    for degree, octave in zip(degrees, octaves):
         n = note.Note(getNoteFromScaleDegree(degree, 0) + octave * 12)
         s.append(n)
     return s
