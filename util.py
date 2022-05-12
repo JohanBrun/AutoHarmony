@@ -1,4 +1,5 @@
-import genMidi
+import midiModule
+import chordModule
 
 majorScale = (0, 2, 4, 5, 7, 9, 11)
 ks = 0
@@ -82,8 +83,9 @@ def getRoot(keySignature: int):
         root = keySignature * 7
     return root
 
-def getNoteFromScaleDegree(degree: int, ks: int, scale):
-    return getRoot(ks) + scale[degree - 1]
+def getNoteFromScaleDegree(degree: int, ks: int):
+    majorScale = (0, 2, 4, 5, 7, 9, 11)
+    return getRoot(ks) + majorScale[degree - 1]
 
 def findClosestDegree(chord: str, previousDegree: int):
     distance = 127
@@ -96,7 +98,7 @@ def findClosestDegree(chord: str, previousDegree: int):
     
 
 
-mg = genMidi.midiGenerator()
+""" mg = genMidi.midiGenerator()
 S, A, T, B = genCadenceDegrees()
 S, A, T, B = degreesToNotes(S, A, T, B)
 S = mg.buildVoiceStream(S)
@@ -105,4 +107,4 @@ T = mg.buildVoiceStream(T)
 B = mg.buildVoiceStream(B)
 
 score = mg.buildVoicesScore(B, T, A, S)
-score.show()
+score.show() """
