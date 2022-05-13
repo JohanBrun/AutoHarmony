@@ -53,7 +53,7 @@ def findClosestDegree(chord: str, previousDegree: int):
             closestDegree = degree
     return closestDegree
     
-def degreeOperator(degree: int, octave: int, change: int):
+def degreeOperator(degree: int, octave: int, change: int) -> tuple[int, int]:
     degree += change
     if degree > 7:
         degree -= 7

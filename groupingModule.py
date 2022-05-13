@@ -13,7 +13,7 @@ class BaseGroup:
         assert numBeats > 1
         self.numBeats = numBeats
         self.dir = dir
-        self.notes = []
+        self.degrees = []
         self.suggestedChords = []
         self.octaves = []
 
@@ -41,13 +41,13 @@ class SectionGroup:
         return contour, len(contour)
 
     def flatten(self):
-        notes = []
+        degrees = []
         octaves = []
         for phraseGroup in self.groups:
             for baseGroup in phraseGroup.groups:
-                notes += baseGroup.notes
+                degrees += baseGroup.degrees
                 octaves += baseGroup.octaves
-        return notes, octaves
+        return degrees, octaves
 
     def groupDescent(self, baseGroupMethod):
         for phraseGroup in self.groups:

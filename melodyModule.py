@@ -26,7 +26,7 @@ class MelodyModule:
 
             # Add current degree
             degree = self.currentDegree
-            baseGroup.notes.append(degree)
+            baseGroup.degrees.append(degree)
             baseGroup.octaves.append(octave)
             baseGroup.suggestedChords.append(self.getSuggestedChords(degree))
 
@@ -39,7 +39,7 @@ class MelodyModule:
             elif (baseGroup.dir == Direction.STRAIGHT):
                 movement = random.choice([-1, 0, 1])
             self.currentDegree, octave = degreeOperator(degree, octave, movement)
-            
+
         self.voice.startOctave = octave
     
     def getSuggestedChords(self, degree: int):
