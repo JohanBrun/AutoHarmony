@@ -1,16 +1,16 @@
 import random, copy
 from groupingModule import BaseGroup, SectionGroup
-from localTypes import Voice, Motion, VoiceGroup, chordDict
-from util import degreeOperator
+from localTypes import Voice, Motion, VoiceGroup, chordDict, primaryChordProgressions, secondaryChordProgressions
+from util import degreeOperator, intersection
 
 class HarmonyModule:
     currentMotion = None
     finalChords = []
+    
     def __init__(self, composition: SectionGroup, voice: Voice) -> None:
         self.composition = composition
         self.voice = voice
         self.composition.groupDescent(self.harmonize)
-        print(self.finalChords)
         self.currentDegree = 1
         self.currentOctave = voice.startOctave
 
@@ -25,9 +25,9 @@ class HarmonyModule:
     def parallelMotion(self, degrees, octaves, suggestedChords):
         for i in range(len(degrees)):
             degrees[i], octaves[i] = degreeOperator(degrees[i], octaves[i], -2)
-            suggestedChords[i] = self.updateSuggestedChords(degrees[i], suggestedChords[i])
+            # suggestedChords[i] = self.updateSuggestedChords(degrees[i], suggestedChords[i])
 
-    def obliqueMotion(self, degrees, octaves, suggestedChords):
+    def obliqueMotionOld(self, degrees, octaves, suggestedChords):
         if self.currentMotion == Motion.OBLIQUE:
             firstNote = self.currentDegree
             firstOctave = self.currentOctave
@@ -45,9 +45,29 @@ class HarmonyModule:
         self.currentDegree = degrees[-1]
         self.currentOctave = octaves[-1]
 
+    def obliqueMotion(self, degrees, octaves, suggestedChords):
+        if self.currentMotion == Motion.OBLIQUE:
+            firstNote = self.currentDegree
+            firstOctave = self.currentOctave
+        else:
+            self.currentMotion = Motion.OBLIQUE
+            firstNote = degrees[0]
+            firstOctave = octaves[0]
+        for i in range(len(degrees)):
+            degrees[i], octaves[i] = firstNote, firstOctave
+            print(suggestedChords)
+        self.currentDegree = degrees[-1]
+        self.currentOctave = octaves[-1]
+
     def rootMotion(self, degrees, octaves, suggestedChords):
         for i in range(len(degrees)):
-            chord = random.choice(suggestedChords[i])
+            if i == 0: chord = random.choice(suggestedChords[i])
+            else:
+                inter = intersection(primaryChordProgressions[chord], suggestedChords[i])
+                if inter == []:
+                    inter = intersection(secondaryChordProgressions[chord], suggestedChords[i])
+                chord = random.choice(inter)
+            suggestedChords[i] = chord
             self.finalChords.append(chord)
             degrees[i] = chordDict[chord][0]
             if i == 0: octaves[i] = self.voice.startOctave - 1

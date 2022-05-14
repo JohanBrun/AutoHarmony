@@ -2,17 +2,20 @@ import copy
 from groupingModule import SectionGroup
 from harmonyModule import HarmonyModule
 from melodyModule import MelodyModule, Voice, VoiceGroup
-from midiModule import MidiModule
-from music21 import stream, instrument
+from midiModule import addChordNames, getStream
+from music21 import stream
 
 def main():
     soprano = Voice(VoiceGroup.SOPRANO, ((58, 82)))
-    alto = Voice(VoiceGroup.ALTO, (51, 75))
-    tenor = Voice(VoiceGroup.TENOR, (46, 70))
-    bass = Voice(VoiceGroup.BASS, ((39, 63)))
+    alto    = Voice(VoiceGroup.ALTO, (51, 75))
+    tenor   = Voice(VoiceGroup.TENOR, (46, 70))
+    bass    = Voice(VoiceGroup.BASS, ((39, 63)))
 
     compositionS = SectionGroup(3)
     MelodyModule(compositionS, soprano)
+
+    compositionB = copy.deepcopy(compositionS)
+    HarmonyModule(compositionB, bass)
 
     compositionA = copy.deepcopy(compositionS)
     HarmonyModule(compositionA, alto)
@@ -20,17 +23,12 @@ def main():
     compositionT = copy.deepcopy(compositionA)
     HarmonyModule(compositionT, tenor)
     
-    compositionB = copy.deepcopy(compositionT)
-    HarmonyModule(compositionB, bass)
-    """"
-    s = stream.Stream([sopranoStream, altoStream, tenorStream, bassStream])
-    """
-    midiModule = MidiModule()
+    sopranoStream = getStream(compositionS, soprano.voiceGroup)
+    altoStream = getStream(compositionA, alto.voiceGroup)
+    tenorStream = getStream(compositionT, tenor.voiceGroup)
+    bassStream = getStream(compositionB, bass.voiceGroup)
 
-    sopranoStream = midiModule.getStream(compositionS, soprano.voiceGroup)
-    altoStream = midiModule.getStream(compositionA, alto.voiceGroup)
-    tenorStream = midiModule.getStream(compositionT, tenor.voiceGroup)
-    bassStream = midiModule.getStream(compositionB, bass.voiceGroup)
+    bassStream = addChordNames(bassStream)
 
     s = stream.Stream([sopranoStream, altoStream, tenorStream, bassStream])
     s.show()

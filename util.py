@@ -62,3 +62,7 @@ def degreeOperator(degree: int, octave: int, change: int) -> tuple[int, int]:
         degree += 7
         octave -= 1
     return degree, octave
+
+def intersection(list1, list2):
+    list3 = [value for value in list1 if value in list2]
+    return list3
