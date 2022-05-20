@@ -4,16 +4,13 @@ from groupingModule import BaseGroup, SectionGroup
 from localTypes import Voice, VoiceGroup, Direction, chordDict
 from util import degreeOperator
 
-class MelodyModule:
+class MelodyModule():
     currentDegree = 1
 
-    def __init__(self, composition: SectionGroup, voice: Voice) -> None:
-        self.composition = composition
+    def __init__(self, grouping: SectionGroup, voice: Voice) -> None:
+        self.grouping = grouping
         self.voice = voice
-        # if voice.voiceGroup == VoiceGroup.SOPRANO: self.currentDegree = 5
-        if voice.voiceGroup == VoiceGroup.ALTO: self.currentDegree = 3
-        if voice.voiceGroup == VoiceGroup.TENOR: self.currentDegree = 5
-        self.composition.groupDescent(self.populateBaseGroup)
+        self.grouping.groupDescent(self.populateBaseGroup)
 
     def populateBaseGroup(self, baseGroup: BaseGroup):
         voiceRange = self.voice.voiceRange
@@ -28,7 +25,8 @@ class MelodyModule:
             degree = self.currentDegree
             baseGroup.degrees.append(degree)
             baseGroup.octaves.append(octave)
-            baseGroup.suggestedChords.append(self.getSuggestedChords(degree))
+            # baseGroup.suggestedChords.append(self.getSuggestedChords(degree))
+            baseGroup.suggestedChords.append(self.getSuggestedChords2())
 
             # Move to next degree
             movement = 0
@@ -36,8 +34,6 @@ class MelodyModule:
                 movement = 1
             elif (baseGroup.dir == Direction.DESCENDING):
                 movement = -1
-            elif (baseGroup.dir == Direction.STRAIGHT):
-                movement = random.choice([-1, 0, 1])
             self.currentDegree, octave = degreeOperator(degree, octave, movement)
 
         self.voice.startOctave = octave
@@ -47,3 +43,6 @@ class MelodyModule:
         for key in chordDict:
             if degree in chordDict[key]: chords.append(key)
         return chords
+
+    def getSuggestedChords2(self):
+        return [1, 2, 3, 4, 5, 6]

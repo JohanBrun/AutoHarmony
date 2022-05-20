@@ -1,4 +1,4 @@
-from music21 import stream, note, chord, instrument
+from music21 import stream, note, chord, instrument, clef
 from groupingModule import SectionGroup
 from localTypes import VoiceGroup
 from util import getRoot, getNoteFromScaleDegree
@@ -22,6 +22,7 @@ class MidiModule:
 def getStream(composition: SectionGroup, voiceGroup: VoiceGroup):
     s = stream.Stream()
     s.insert(getInstrument(voiceGroup))
+    s.insert(getClef(voiceGroup))
     degrees, octaves = composition.flatten()
     roman = ['I', 'ii', 'iii', 'IV', 'V', 'vi']
     for degree, octave in zip(degrees, octaves):
@@ -34,19 +35,20 @@ def getStream(composition: SectionGroup, voiceGroup: VoiceGroup):
 
 def getInstrument(voiceGroup: VoiceGroup):
     if voiceGroup == VoiceGroup.SOPRANO:
-        return instrument.Soprano()
+        return instrument.Tenor()
     elif voiceGroup == VoiceGroup.ALTO:
-        return instrument.Alto()
+        return instrument.Tenor()
     elif voiceGroup == VoiceGroup.TENOR:
         return instrument.Tenor()
     elif voiceGroup == VoiceGroup.BASS:
         return instrument.Bass()
 
-def addChordNames(stream: stream.Stream):
-    roman = ['I', 'ii', 'iii', 'IV', 'V', 'vi']
-    for n in zip(stream):
-        try:
-            n.insertLyric('Chord')
-        except:
-            pass
-    return stream
+def getClef(voiceGroup: VoiceGroup):
+    if voiceGroup == VoiceGroup.SOPRANO:
+        return clef.TrebleClef()
+    elif voiceGroup == VoiceGroup.ALTO:
+        return clef.TrebleClef()
+    elif voiceGroup == VoiceGroup.TENOR:
+        return clef.Treble8vbClef()
+    elif voiceGroup == VoiceGroup.BASS:
+        return clef.BassClef()

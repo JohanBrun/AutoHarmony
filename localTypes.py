@@ -1,37 +1,51 @@
 from enum import Enum
+from functools import total_ordering
 import math
 
 class Direction(Enum):
     ASCENDING = 1
-    DESCENDING = 2
-    STRAIGHT = 3
+    DESCENDING = -1
+    STRAIGHT = 0
 
+@total_ordering
 class VoiceGroup(Enum):
-    SOPRANO = 1
-    ALTO = 2
-    TENOR = 3
-    BASS = 4
+    SOPRANO = 4
+    ALTO = 3
+    TENOR = 2
+    BASS = 1
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
 
 class Motion(Enum):
-    PARALLEL = 1
-    SIMILAR = 2
-    OBLIQUE = 3
-    COUNTER = 4
-    FILL = 5
+    SIMILAR = 1
+    OBLIQUE = 0
+    COUNTER = -1
+    ROOT = 4
 
 class Voice:
-    def __init__(self, voiceGroup: VoiceGroup, voiceRange: tuple[int, int]) -> None:
+    RANGES = {
+        VoiceGroup.SOPRANO: (58, 82),
+        VoiceGroup.ALTO:    (51, 75),
+        VoiceGroup.TENOR:   (46, 70),
+        VoiceGroup.BASS:    (39, 63)
+    }
+
+    def __init__(self, voiceGroup: VoiceGroup) -> None:
         self.voiceGroup = voiceGroup
-        self.voiceRange = voiceRange
-        self.startOctave = math.ceil((voiceRange[0] + voiceRange[1]) / 24)
+        self.voiceRange = self.RANGES[voiceGroup]
+        self.startingRange = (self.voiceRange[0] + 6, self.voiceRange[1] - 6)
+        self.startOctave = math.ceil((3 * self.voiceRange[0] + self.voiceRange[1]) / 48)
 
 chordDict: dict = {
-    1: [1, 3, 5, 7],
-    2: [2, 4, 6, 1],
-    3: [3, 5, 7, 2],
-    4: [4, 6, 1, 3],
-    5: [5, 7, 2, 4],
-    6: [6, 1, 3, 5]
+    1: [1, 3, 5],
+    2: [2, 4, 6],
+    3: [3, 5, 7],
+    4: [4, 6, 1],
+    5: [5, 7, 2],
+    6: [6, 1, 3]
 }
 
 primaryChordProgressions = {

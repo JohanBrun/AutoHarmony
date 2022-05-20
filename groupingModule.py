@@ -1,9 +1,6 @@
 import random
 from localTypes import Direction
 
-
-
-
 class GroupingModule:
     def __init__(self) -> None:
         composition = SectionGroup(3)
@@ -14,12 +11,12 @@ class BaseGroup:
         self.numBeats = numBeats
         self.dir = dir
         self.degrees = []
-        self.suggestedChords = []
         self.octaves = []
+        self.suggestedChords = []
 
 class PhraseGroup:
     def __init__(self, numGroups: int, contour: list[Direction]) -> None:
-        assert numGroups == len(contour)
+        assert numGroups > 1 and numGroups == len(contour)
         self.numGroups = numGroups
         self.contour = contour
         self.groups = []
@@ -28,6 +25,7 @@ class PhraseGroup:
 
 class SectionGroup:
     def __init__(self, numGroups: int) -> None:
+        assert numGroups > 1
         self.numGroups = numGroups
         self.groups = []
         for i in range(self.numGroups):
@@ -36,8 +34,8 @@ class SectionGroup:
 
     def buildContour(self):
         contour = []
-        for i in range(3):
-            contour.append(random.choice([Direction.ASCENDING, Direction.DESCENDING, Direction.STRAIGHT]))
+        for i in range(self.numGroups):
+            contour.append(random.choice([Direction.ASCENDING, Direction.DESCENDING]))
         return contour, len(contour)
 
     def flatten(self):
