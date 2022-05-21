@@ -1,4 +1,6 @@
 import copy
+from dis import dis
+from math import dist
 import random
 
 from numpy import sign
@@ -22,6 +24,9 @@ class HarmonyModule:
         motion = random.choice([Motion.SIMILAR, Motion.COUNTER])
         if self.voice.voiceGroup == VoiceGroup.BASS:
             self.rootMotion(baseGroup.degrees, baseGroup.octaves, baseGroup.suggestedChords)
+            isWellMade = True
+        if self.hasCommodDegree(baseGroup.suggestedChords):
+            self.obliqueMotion(baseGroup.degrees, baseGroup.octaves, baseGroup.suggestedChords)
             isWellMade = True
         while isWellMade == False:
             isWellMade = self.findDegrees(baseGroup.degrees, baseGroup.octaves, baseGroup.suggestedChords, baseGroup.dir, motion)
@@ -83,17 +88,16 @@ class HarmonyModule:
         self.currentOctave = octaves[-1]
 
     def obliqueMotion(self, degrees, octaves, suggestedChords):
-        if self.currentMotion == Motion.OBLIQUE:
-            firstNote = self.currentDegree
-            firstOctave = self.currentOctave
-        else:
-            self.currentMotion = Motion.OBLIQUE
-            firstNote, firstOctave = self.findStartingDegree(suggestedChords[0])
+        print('oblique motion')
+        commonDegrees = self.findCommonDegrees(suggestedChords)
+        obliqueDegree = self.findClosestDegree(self.currentDegree, commonDegrees)
+        obliqueOctave = self.findClosestOctave(obliqueDegree, self.currentDegree, self.currentOctave)
         for i in range(len(degrees)):
-            degrees[i], octaves[i] = firstNote, firstOctave
-        self.currentDegree = degrees[-1]
-        self.currentOctave = octaves[-1]
-
+            degrees[i] = obliqueDegree
+            octaves[i] = obliqueOctave
+            suggestedChords[i].remove(obliqueDegree)
+        self.currentDegree, self.currentOctave = obliqueDegree, obliqueOctave
+        
     def rootMotion(self, degrees, octaves, suggestedChords):
         for i in range(len(degrees)):
             if self.currentDegree == -1:
@@ -115,7 +119,21 @@ class HarmonyModule:
             self.currentDegree, self.currentOctave = degrees[i], octaves[i]
             suggestedChords[i] = availableDegrees
 
-    def findClosestOctave(self, currentDegree, previousDegree, octave):
+    def findClosestDegree(self, currentDegree: int, degrees: list[int]):
+        closestDegree = 0
+        maxDistance = 8
+        for degree in degrees:
+            distance = degree - currentDegree
+            if distance > 3:
+                distance = degree - 8
+            elif distance < -3:
+                distance = 8 - currentDegree
+            distance = abs(distance)
+            if distance < maxDistance:
+                closestDegree = degree
+        return closestDegree
+
+    def findClosestOctave(self, currentDegree: int, previousDegree: int, octave: int):
         previousNote = getNoteFromScaleDegree(previousDegree, 0) + 12 * octave
         currentNote = getNoteFromScaleDegree(currentDegree, 0) + 12 * octave
         if (currentNote - previousNote > 6 and currentNote - 12 >= self.voice.voiceRange[0]) or currentNote > self.voice.voiceRange[1]:
@@ -134,3 +152,17 @@ class HarmonyModule:
     def isOutsideRange(self, midiValue: int):
         # print(midiValue, self.voice.voiceRange, midiValue < self.voice.voiceRange[0] or midiValue > self.voice.voiceRange[1])
         return midiValue < self.voice.voiceRange[0] or midiValue > self.voice.voiceRange[1]
+
+    def hasCommodDegree(self, chordDegrees: list[list[int]]):
+        degrees = chordDegrees[0]
+        for i in range(1, len(chordDegrees)):
+            degrees = intersection(chordDegrees[i], degrees)
+            if degrees == []:
+                return False
+        return True
+
+    def findCommonDegrees(self, chordDegrees: list[list[int]]):
+        degrees = chordDegrees[0]
+        for i in range(1, len(chordDegrees)):
+            degrees = intersection(degrees, chordDegrees[i])
+        return degrees

@@ -7,7 +7,7 @@ from music21 import stream
 import random
 
 def main():
-    random.seed(0)
+    #random.seed(0)
 
     soprano = Voice(VoiceGroup.SOPRANO)
     alto    = Voice(VoiceGroup.ALTO)
