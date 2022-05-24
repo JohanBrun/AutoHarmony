@@ -1,4 +1,4 @@
-from music21 import stream, note, chord, instrument, clef
+from music21 import stream, note, chord, instrument, clef, tempo, spanner
 from groupingModule import SectionGroup
 from localTypes import VoiceGroup
 from util import getRoot, getNoteFromScaleDegree
@@ -23,11 +23,13 @@ def getStream(composition: SectionGroup, voiceGroup: VoiceGroup):
     s = stream.Stream()
     s.insert(getInstrument(voiceGroup))
     s.insert(getClef(voiceGroup))
-    degrees, octaves = composition.flatten()
+    s.insert(tempo.MetronomeMark(number=80))
+    degrees, octaves, _, _ = composition.flatten()
     roman = ['I', 'ii', 'iii', 'IV', 'V', 'vi']
+    i = 0
     for degree, octave in zip(degrees, octaves):
         n = note.Note(getNoteFromScaleDegree(degree, 0) + octave * 12)
-        n.quarterLength = 4
+        n.quarterLength = 2
         if voiceGroup == VoiceGroup.BASS:
             n.addLyric(roman[degree-1])
         s.append(n)

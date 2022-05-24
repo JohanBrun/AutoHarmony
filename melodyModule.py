@@ -5,11 +5,10 @@ from localTypes import Voice, VoiceGroup, Direction, chordDict
 from util import degreeOperator
 
 class MelodyModule():
-    currentDegree = 1
-
     def __init__(self, grouping: SectionGroup, voice: Voice) -> None:
         self.grouping = grouping
         self.voice = voice
+        self.currentDegree = 1
         self.grouping.groupDescent(self.populateBaseGroup)
 
     def populateBaseGroup(self, baseGroup: BaseGroup):
@@ -17,7 +16,7 @@ class MelodyModule():
         octave = self.voice.startOctave
 
         for i in range(baseGroup.numBeats):
-            # Check for edges of range
+            # Check for edges of range, not accurate enough should be replaced.
             if (octave == math.floor(voiceRange[0] / 12)): baseGroup.dir = Direction.ASCENDING
             if (octave == math.ceil(voiceRange[1] / 12)): baseGroup.dir = Direction.DESCENDING
 
