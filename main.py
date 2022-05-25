@@ -5,10 +5,11 @@ from melodyModule import MelodyModule, Voice, VoiceGroup
 from midiModule import getStream
 from music21 import stream
 import matplotlib.pyplot as plt
-import numpy as np
+import random
 
 def main():
-    #random.seed(0)
+    random.seed(1)
+    showVA = False
 
     soprano = Voice(VoiceGroup.SOPRANO)
     alto    = Voice(VoiceGroup.ALTO)
@@ -36,18 +37,17 @@ def main():
     s.show()
     s.write('midi', 'composition.midi')
 
-    _, _, valence, arousal = compositionS.flatten()
-    print(valence)
-    print(arousal)
-    fig, ax = plt.subplots()
-    ax.set_title('Valence')
-    ax.plot(valence, linewidth=2.0)
+    if showVA:
+        _, _, _, valence, arousal = compositionS.flatten()
+        fig, ax = plt.subplots()
+        ax.set_title('Valence')
+        ax.plot(valence, linewidth=2.0)
 
-    fig, ax = plt.subplots()
-    ax.set_title('Arousal')
-    ax.plot(arousal, linewidth=2.0)
+        fig, ax = plt.subplots()
+        ax.set_title('Arousal')
+        ax.plot(arousal, linewidth=2.0)
 
-    plt.show()
+        plt.show()
 
 if __name__ == '__main__':
     main()

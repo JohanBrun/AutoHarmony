@@ -15,7 +15,7 @@ class MelodyModule():
         voiceRange = self.voice.voiceRange
         octave = self.voice.startOctave
 
-        for i in range(baseGroup.numBeats):
+        for i in range(baseGroup.numUnits):
             # Check for edges of range, not accurate enough should be replaced.
             if (octave == math.floor(voiceRange[0] / 12)): baseGroup.dir = Direction.ASCENDING
             if (octave == math.ceil(voiceRange[1] / 12)): baseGroup.dir = Direction.DESCENDING
@@ -24,9 +24,12 @@ class MelodyModule():
             degree = self.currentDegree
             baseGroup.degrees.append(degree)
             baseGroup.octaves.append(octave)
-            # baseGroup.suggestedChords.append(self.getSuggestedChords(degree))
-            baseGroup.suggestedChords.append(self.getSuggestedChords2())
-
+            if (baseGroup.numUnits / baseGroup.numBeats) <= 1 or i % 2 == 0:
+                baseGroup.suggestedChords.append(self.getSuggestedChords2())
+                # baseGroup.suggestedChords.append(self.getSuggestedChords(degree))
+            else:
+                print('skip chord')
+        
             # Move to next degree
             movement = 0
             if (baseGroup.dir == Direction.ASCENDING):
@@ -34,7 +37,6 @@ class MelodyModule():
             elif (baseGroup.dir == Direction.DESCENDING):
                 movement = -1
             self.currentDegree, octave = degreeOperator(degree, octave, movement)
-
         self.voice.startOctave = octave
     
     def getSuggestedChords(self, degree: int):
@@ -45,3 +47,6 @@ class MelodyModule():
 
     def getSuggestedChords2(self):
         return [1, 2, 3, 4, 5, 6]
+
+
+
