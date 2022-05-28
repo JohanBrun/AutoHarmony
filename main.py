@@ -1,14 +1,18 @@
 import copy
+import sys
 from groupingModule import SectionGroup
 from harmonyModule import HarmonyModule
-from melodyModule import MelodyModule, Voice, VoiceGroup
-from midiModule import getStream
-from music21 import stream
+from melodyModule import MelodyModule
+from localTypes import Voice, VoiceGroup
+from midiModule import checkChords, getStream, showStream
 import matplotlib.pyplot as plt
 import random
 
+
 def main():
-    random.seed(1)
+    seed = random.randint(0, sys.maxsize)
+    random.seed(seed)
+    print(seed)
     showVA = False
 
     soprano = Voice(VoiceGroup.SOPRANO)
@@ -16,7 +20,7 @@ def main():
     tenor   = Voice(VoiceGroup.TENOR)
     bass    = Voice(VoiceGroup.BASS)
 
-    compositionS = SectionGroup(2)
+    compositionS = SectionGroup(8)
     MelodyModule(compositionS, soprano)
 
     compositionB = copy.deepcopy(compositionS)
@@ -32,10 +36,8 @@ def main():
     altoStream = getStream(compositionA, alto.voiceGroup)
     tenorStream = getStream(compositionT, tenor.voiceGroup)
     bassStream = getStream(compositionB, bass.voiceGroup)
-
-    s = stream.Stream([sopranoStream, altoStream, tenorStream, bassStream])
-    s.show()
-    s.write('midi', 'composition.midi')
+    showStream(sopranoStream, altoStream, tenorStream, bassStream)
+    checkChords(compositionS, compositionA, compositionT, compositionB)
 
     if showVA:
         _, _, _, valence, arousal = compositionS.flatten()

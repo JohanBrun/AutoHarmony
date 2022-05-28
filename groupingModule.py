@@ -14,8 +14,9 @@ class BaseGroup:
         self.dir = dir
         self.degrees = []
         self.octaves = []
-        self.suggestedChords = []
-        self.valence, self.arousal = self.generateVA(meanVA)
+        self.chords = []
+        self.availableDegrees = []
+        self.valence, self.arousal = meanVA
         self.numUnits, self.numBeats, self.durations = self.generateRythm(meanVA[1], uniform(-2,2))
         self.index += 1
 
@@ -50,9 +51,6 @@ class BaseGroup:
             numUnits += 1
             durations[0] /= 2
             durations.insert(0, durations[0])
-            """ durations = numUnits * [(numBeats - 1) / numUnits]
-            for i in range(numUnits - 1):
-                durations[i] /= 2 """
         return numUnits, numBeats, durations
 
 class PhraseGroup:
@@ -103,8 +101,8 @@ class SectionGroup:
                 degrees += baseGroup.degrees
                 octaves += baseGroup.octaves
                 durations += baseGroup.durations
-                valence += list(baseGroup.valence)
-                arousal += list(baseGroup.arousal)
+                valence.append(baseGroup.valence)
+                arousal.append(baseGroup.arousal)
         return degrees, octaves, durations, valence, arousal
 
     def groupDescent(self, baseGroupMethod):

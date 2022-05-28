@@ -2,10 +2,11 @@ from enum import Enum
 from functools import total_ordering
 import math
 
+from util import getMidiValueFromScaleDegree
+
 class Direction(Enum):
     ASCENDING = 1
     DESCENDING = -1
-    STRAIGHT = 0
 
 @total_ordering
 class VoiceGroup(Enum):
@@ -39,6 +40,10 @@ class Voice:
         self.startingRange = (self.voiceRange[0] + 6, self.voiceRange[1] - 6)
         self.startOctave = math.ceil((3 * self.voiceRange[0] + self.voiceRange[1]) / 48)
 
+    def isOutsideRange(self, degree: int, octave: int):
+        midiValue = getMidiValueFromScaleDegree(degree, 0) + octave * 12
+        return midiValue < self.voiceRange[0] or midiValue > self.voiceRange[1]
+
 chordDict: dict = {
     1: [1, 3, 5],
     2: [2, 4, 6],
@@ -48,13 +53,22 @@ chordDict: dict = {
     6: [6, 1, 3]
 }
 
+extendedChordDict: dict = {
+    1: [1, 1, 3, 3, 5, 5, 2, 4, 6, 7],
+    2: [2, 2, 4, 4, 6, 6, 3, 5, 7, 1],
+    3: [3, 3, 5, 5, 7, 7, 4, 6, 1, 2],
+    4: [4, 4, 6, 6, 1, 1, 5, 7, 2, 3],
+    5: [5, 5, 7, 7, 2, 2, 6, 1, 3, 4],
+    6: [6, 6, 1, 1, 3, 3, 7, 2, 4, 5]
+}
+
 primaryChordProgressions = {
-    1: [1, 2, 4, 6],
-    2: [2, 3, 5],
-    3: [1, 3, 4, 6],
-    4: [2, 4, 5],
-    5: [1, 3, 5, 6],
-    6: [2, 4, 6]
+    1: [2, 4, 6],
+    2: [3, 5],
+    3: [1, 4, 6],
+    4: [2, 5],
+    5: [1, 3, 6],
+    6: [2, 4,]
 }
 
 secondaryChordProgressions = {

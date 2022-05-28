@@ -1,6 +1,4 @@
 import copy
-from dis import dis
-from math import dist
 import random
 
 from numpy import sign
@@ -9,8 +7,6 @@ from localTypes import Direction, Voice, Motion, VoiceGroup, chordDict, primaryC
 from util import degreeOperator, getMidiValueFromScaleDegree, intersection
 
 class HarmonyModule:
-    currentMotion = None
-    
     def __init__(self, grouping: SectionGroup, voice: Voice, melodyVoice: Voice) -> None:
         self.grouping = grouping
         self.voice = voice
@@ -20,25 +16,16 @@ class HarmonyModule:
         self.grouping.groupDescent(self.harmonize)
 
     def harmonize(self, baseGroup: BaseGroup):
-        print(baseGroup.suggestedChords)
-        print(baseGroup.numUnits)
         if baseGroup.numBeats / baseGroup.numUnits < 1:
             baseGroup.numUnits = baseGroup.numBeats
             baseGroup.durations = baseGroup.numUnits * [1]
         baseGroup.degrees = [0] * baseGroup.numUnits
         baseGroup.octaves = [0] * baseGroup.numUnits
-        isWellMade = False
         motion = random.choice([Motion.SIMILAR, Motion.COUNTER])
         if self.voice.voiceGroup == VoiceGroup.BASS:
             self.rootMotion(baseGroup)
-            isWellMade = True
-        if self.hasCommodDegree(baseGroup.suggestedChords):
-            self.obliqueMotion(baseGroup)
-            isWellMade = True
-        while isWellMade == False:
-            isWellMade = self.findDegrees(baseGroup, motion)
-            if isWellMade == False:
-                motion = Motion(motion.value * -1)
+        else:
+            self.findDegrees(baseGroup, motion)
             
     def findStartingDegree(self, availableDegrees: int):
         degree = random.choice(availableDegrees)
@@ -49,66 +36,47 @@ class HarmonyModule:
         return degree, octave
         
     def findNextDegree(self, previousDegree: int, previousOctave: int, availableDegrees: list[int], dir: Direction, motion: Motion):
-        degree, octave = previousDegree, previousOctave
-        while degree not in availableDegrees:
-            if (dir == Direction.STRAIGHT):
-                degree, octave = degreeOperator(degree, octave, random.choice([1, -1]))
-            else:
-                degree, octave = degreeOperator(degree, octave, dir.value * motion.value)
-        previousMidiValue = getMidiValueFromScaleDegree(previousDegree, 0) + 12 * previousOctave
-        newMidiValue = getMidiValueFromScaleDegree(degree, 0) + 12 * octave
-        if abs(previousMidiValue - newMidiValue) > 7 or self.isOutsideRange(newMidiValue):
-            return degree, octave, False
-        return degree, octave, True
+        nextDegree, nextOctave = previousDegree, previousOctave
+        while nextDegree not in availableDegrees:
+            nextDegree, nextOctave = degreeOperator(nextDegree, nextOctave, dir.value * motion.value)
+        
+        isLeapTooLarge = self.isLeapTooLarge(previousDegree, previousOctave, nextDegree, nextOctave)
+        isOutsideRange = self.voice.isOutsideRange(nextDegree, nextOctave)
+
+        return nextDegree, nextOctave, isLeapTooLarge, isOutsideRange
     
     def findDegrees(self, baseGroup: BaseGroup, motion: Motion) -> bool:
-        degrees, octaves, suggestedChords, dir = baseGroup.degrees, baseGroup.octaves, baseGroup.suggestedChords, baseGroup.dir
+        degrees, octaves, availableDegrees, dir = baseGroup.degrees, baseGroup.octaves, baseGroup.availableDegrees, baseGroup.dir
         for i in range(0, baseGroup.numUnits):
             if self.currentDegree == -1:
-                degrees[0], octaves[0] = self.findStartingDegree(suggestedChords[0])
-                suggestedChords[i].remove(degrees[0])
+                degrees[0], octaves[0] = self.findStartingDegree(availableDegrees[0])
+                availableDegrees[i].remove(degrees[0])
             else:
-                degrees[i], octaves[i], flag = self.findNextDegree(self.currentDegree, self.currentOctave, suggestedChords[i], dir, motion)
-                suggestedChords[i].remove(degrees[i])
+                nextDegree, nextOctave, leapTooLarge, outideRange = self.findNextDegree(self.currentDegree, self.currentOctave, availableDegrees[i], dir, motion)
+                if leapTooLarge or outideRange:
+                    oppositeMotion = Motion(motion.value * -1)
+                    alternateDegree, alternateOctave, leapTooLarge, outideRange = self.findNextDegree(self.currentDegree, self.currentOctave, availableDegrees[i], dir, oppositeMotion)
+                    if not outideRange:
+                        nextDegree, nextOctave = alternateDegree, alternateOctave
+                degrees[i], octaves[i] = nextDegree, nextOctave
+                availableDegrees[i].remove(degrees[i])
+                if len(availableDegrees[i]) > 3:
+                    availableDegrees[i] = self.reduceAvailableDegrees(availableDegrees[i], degrees[i])
             self.currentDegree, self.currentOctave = degrees[i], octaves[i]
-        if flag == False:
-            self.currentDegree, self.currentOctave = -1, self.voice.startOctave
-            for i in range(baseGroup.numUnits):
-                suggestedChords[i].append(degrees[i])
-        return flag
-
-    def obliqueMotion(self, baseGroup: BaseGroup):
-        degrees, octaves, suggestedChords = baseGroup.degrees, baseGroup.octaves, baseGroup.suggestedChords
-        commonDegrees = self.findCommonDegrees(suggestedChords)
-        obliqueDegree = self.findClosestDegree(self.currentDegree, commonDegrees)
-        obliqueOctave = self.findClosestOctave(obliqueDegree, self.currentDegree, self.currentOctave)
-        for i in range(baseGroup.numUnits):
-            degrees[i] = obliqueDegree
-            octaves[i] = obliqueOctave
-            suggestedChords[i].remove(obliqueDegree)
-        self.currentDegree, self.currentOctave = obliqueDegree, obliqueOctave
         
     def rootMotion(self, baseGroup: BaseGroup):
-        degrees, octaves, suggestedChords = baseGroup.degrees, baseGroup.octaves, baseGroup.suggestedChords
+        degrees, octaves, availableDegrees = baseGroup.degrees, baseGroup.octaves, baseGroup.availableDegrees
         for i in range(baseGroup.numUnits):
             if self.currentDegree == -1:
-                chord = random.choice(suggestedChords[i])
-                availableDegrees = copy.copy(chordDict[chord])
-                degrees[i] = availableDegrees[0]
+                degrees[i] = availableDegrees[i][0]
                 octaves[i] = self.voice.startOctave
             else:
-                if i == 0:
-                    chord = random.choice(suggestedChords[i])
-                else:
-                    inter = intersection(primaryChordProgressions[chord], suggestedChords[i])
-                    if inter == []:
-                        inter = intersection(secondaryChordProgressions[chord], suggestedChords[i])
-                    chord = random.choice(inter)
-                availableDegrees = copy.copy(chordDict[chord])
-                degrees[i] = availableDegrees[0]
+                degrees[i] = availableDegrees[i][0]
                 octaves[i] = self.findClosestOctave(degrees[i], self.currentDegree, self.currentOctave)
+            availableDegrees[i].remove(degrees[i])
+            if len(availableDegrees[i]) > 3:
+                availableDegrees[i] = self.reduceAvailableDegrees(availableDegrees[i], degrees[i])
             self.currentDegree, self.currentOctave = degrees[i], octaves[i]
-            suggestedChords[i] = availableDegrees
 
     def findClosestDegree(self, currentDegree: int, degrees: list[int]):
         closestDegree = 0
@@ -133,16 +101,12 @@ class HarmonyModule:
             octave += 1
         return octave
 
-    def updateSuggestedChords(self, degree: int, chords: list[str]):
+    def updateavailableDegrees(self, degree: int, chords: list[str]):
         newChords = []
         for key in chords:
             if degree in chordDict[key]:
                 newChords.append(key)
         return newChords
-    
-    def isOutsideRange(self, midiValue: int):
-        # print(midiValue, self.voice.voiceRange, midiValue < self.voice.voiceRange[0] or midiValue > self.voice.voiceRange[1])
-        return midiValue < self.voice.voiceRange[0] or midiValue > self.voice.voiceRange[1]
 
     def hasCommodDegree(self, chordDegrees: list[list[int]]):
         degrees = chordDegrees[0]
@@ -157,3 +121,16 @@ class HarmonyModule:
         for i in range(1, len(chordDegrees)):
             degrees = intersection(degrees, chordDegrees[i])
         return degrees
+
+    def reduceAvailableDegrees(self, availableDegrees: list[int], removedDegree):
+        if removedDegree not in availableDegrees:
+            remainingDegrees = set(availableDegrees)
+            for d in remainingDegrees:
+                availableDegrees.remove(d)
+        return availableDegrees
+
+    def isLeapTooLarge(self, degree, octave, nextDegree, nextOctave):
+        midiValue = getMidiValueFromScaleDegree(degree, 0) + 12 * octave
+        nextMidiValue = getMidiValueFromScaleDegree(nextDegree, 0) + 12 * nextOctave
+        return abs(midiValue - nextMidiValue) > 7
+            
