@@ -20,7 +20,7 @@ def main():
     tenor   = Voice(VoiceGroup.TENOR)
     bass    = Voice(VoiceGroup.BASS)
 
-    compositionS = SectionGroup(8)
+    compositionS = SectionGroup(3)
     MelodyModule(compositionS, soprano)
 
     compositionB = copy.deepcopy(compositionS)
@@ -37,7 +37,7 @@ def main():
     tenorStream = getStream(compositionT, tenor.voiceGroup)
     bassStream = getStream(compositionB, bass.voiceGroup)
     showStream(sopranoStream, altoStream, tenorStream, bassStream)
-    checkChords(compositionS, compositionA, compositionT, compositionB)
+    # checkChords(compositionS, compositionA, compositionT, compositionB)
 
     if showVA:
         _, _, _, valence, arousal = compositionS.flatten()
