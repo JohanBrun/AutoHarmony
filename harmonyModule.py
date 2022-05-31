@@ -39,7 +39,6 @@ class HarmonyModule:
         nextDegree, nextOctave = previousDegree, previousOctave
         while nextDegree not in availableDegrees:
             nextDegree, nextOctave = degreeOperator(nextDegree, nextOctave, dir.value * motion.value)
-        
         isLeapTooLarge = self.isLeapTooLarge(previousDegree, previousOctave, nextDegree, nextOctave)
         isOutsideRange = self.voice.isOutsideRange(nextDegree, nextOctave)
 
@@ -47,22 +46,29 @@ class HarmonyModule:
     
     def findDegrees(self, baseGroup: BaseGroup, motion: Motion) -> bool:
         degrees, octaves, availableDegrees, dir = baseGroup.degrees, baseGroup.octaves, baseGroup.availableDegrees, baseGroup.dir
-        for i in range(0, baseGroup.numUnits):
+        i = 0
+        while i < baseGroup.numUnits:
             if self.currentDegree == -1:
-                degrees[0], octaves[0] = self.findStartingDegree(availableDegrees[0])
-                availableDegrees[i].remove(degrees[0])
-            else:
-                nextDegree, nextOctave, leapTooLarge, outideRange = self.findNextDegree(self.currentDegree, self.currentOctave, availableDegrees[i], dir, motion)
-                if leapTooLarge or outideRange:
-                    oppositeMotion = Motion(motion.value * -1)
-                    alternateDegree, alternateOctave, leapTooLarge, outideRange = self.findNextDegree(self.currentDegree, self.currentOctave, availableDegrees[i], dir, oppositeMotion)
-                    if not outideRange:
-                        nextDegree, nextOctave = alternateDegree, alternateOctave
-                degrees[i], octaves[i] = nextDegree, nextOctave
+                degrees[i], octaves[i] = self.findStartingDegree(availableDegrees[i])
                 availableDegrees[i].remove(degrees[i])
-                if len(availableDegrees[i]) > 3:
-                    availableDegrees[i] = self.reduceAvailableDegrees(availableDegrees[i], degrees[i])
+                self.currentDegree, self.currentOctave = degrees[i], octaves[i]
+                i += 1
+                continue
+            nextDegree, nextOctave, leapTooLarge, outideRange = self.findNextDegree(self.currentDegree, self.currentOctave, availableDegrees[i], dir, motion)
+            if outideRange:
+                motion = Motion(motion.value * -1)
+                continue
+            if leapTooLarge:
+                oppositeMotion = Motion(motion.value * -1)
+                alternateDegree, alternateOctave, leapTooLarge, outideRange = self.findNextDegree(self.currentDegree, self.currentOctave, availableDegrees[i], dir, oppositeMotion)
+                if not outideRange:
+                    nextDegree, nextOctave = alternateDegree, alternateOctave
+            degrees[i], octaves[i] = nextDegree, nextOctave
+            availableDegrees[i].remove(degrees[i])
+            if len(availableDegrees[i]) > 3:
+                availableDegrees[i] = self.reduceAvailableDegrees(availableDegrees[i], degrees[i])
             self.currentDegree, self.currentOctave = degrees[i], octaves[i]
+            i += 1
         
     def rootMotion(self, baseGroup: BaseGroup):
         degrees, octaves, availableDegrees = baseGroup.degrees, baseGroup.octaves, baseGroup.availableDegrees
