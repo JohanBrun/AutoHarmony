@@ -28,7 +28,7 @@ class Motion(Enum):
 
 class Voice:
     RANGES = {
-        VoiceGroup.SOPRANO: (58, 82),
+        VoiceGroup.SOPRANO: (65, 82),
         VoiceGroup.ALTO:    (51, 75),
         VoiceGroup.TENOR:   (46, 70),
         VoiceGroup.BASS:    (39, 63)
@@ -53,7 +53,7 @@ chordDict: dict = {
     6: [6, 1, 3]
 }
 
-extendedChordDict: dict = {
+extendedChordDict: dict[int, list[int]] = {
     1: [1, 1, 3, 3, 5, 5, 2, 4, 6, 7],
     2: [2, 2, 4, 4, 6, 6, 3, 5, 7, 1],
     3: [3, 3, 5, 5, 7, 7, 4, 6, 1, 2],
@@ -63,12 +63,12 @@ extendedChordDict: dict = {
 }
 
 primaryChordProgressions = {
-    1: [2, 4, 6],
-    2: [3, 5],
-    3: [1, 4, 6],
-    4: [2, 5],
-    5: [1, 3, 6],
-    6: [2, 4,]
+    1: [1, 2, 4, 6],
+    2: [2, 3, 5],
+    3: [1, 3, 4, 6],
+    4: [2, 4, 5],
+    5: [1, 3, 5, 6],
+    6: [2, 4, 6]
 }
 
 secondaryChordProgressions = {
