@@ -97,7 +97,6 @@ class BaseGroup:
         self.dir = dir
         self.degrees = []
         self.octaves = []
-        self.chords = []
         self.availableDegrees = []
         self.valence, self.arousal = meanVA
         self.numUnits, self.numBeats, self.durations = self.generateRythm(meanVA[1], diffV)

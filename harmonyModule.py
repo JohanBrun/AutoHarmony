@@ -7,10 +7,9 @@ from localTypes import Direction, Voice, Motion, VoiceGroup
 from util import degreeOperator, getMidiValueFromScaleDegree, intersection
 
 class HarmonyModule:
-    def __init__(self, grouping: SectionGroup, voice: Voice, melodyVoice: Voice) -> None:
+    def __init__(self, grouping: SectionGroup, voice: Voice) -> None:
         self.grouping = grouping
         self.voice = voice
-        self.melodyVoice = melodyVoice
         self.currentDegree = -1
         self.currentOctave = voice.startOctave
         self.grouping.groupDescent(self.harmonize)

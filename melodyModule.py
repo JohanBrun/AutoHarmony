@@ -19,6 +19,8 @@ class MelodyModule():
         destination = degreeOperator(self.currentDegree, self.currentOctave, self.getDistance(moves, baseGroup.dir))
         if self.voice.isOutsideRange(*destination):
             baseGroup.dir = Direction(baseGroup.dir.value * -1)
+        
+        # Adding melody
         for i in range(baseGroup.numUnits):
             degree = self.currentDegree
             octave = self.currentOctave
@@ -26,15 +28,16 @@ class MelodyModule():
             baseGroup.octaves.append(octave)
             movement = moves[i] * baseGroup.dir.value
             self.currentDegree, self.currentOctave = degreeOperator(degree, octave, movement)
+        
+        # Adding chords
+        availableChords = self.chooseChords(baseGroup.valence, 0)
+        indexModifier = max(round(baseGroup.numUnits / baseGroup.numBeats), 1)
         for i in range(min(baseGroup.numBeats, baseGroup.numUnits)):
-            indexModifier = max(round(baseGroup.numUnits / baseGroup.numBeats), 1)
             melodyDegree = baseGroup.degrees[i * indexModifier]
-            availableChords = self.chooseChords(baseGroup.valence, 0)
             nextChord = self.getNextChord(availableChords, melodyDegree)
+            baseGroup.availableDegrees.append(self.getAvailableDegrees(nextChord, melodyDegree))
             if melodyDegree not in chordDict[nextChord]:
                 self.hasTension = True
-            baseGroup.chords.append(nextChord)
-            baseGroup.availableDegrees.append(self.getAvailableDegrees(nextChord, melodyDegree))
             self.currentChord = nextChord
 
     def populateEndingGroup(self, baseGroup: EndingGroup):
@@ -78,34 +81,21 @@ class MelodyModule():
         return chords
 
     def chooseChords(self, valence: float, diff: float):
-        chords = [1]
-        primaryTriads = [4, 5]
-        intermediateTriads = [6]
-        secondaryTriads = [2, 3]
-        chords.append(primaryTriads.pop(random.randint(0, 1)))
-        intermediateTriads += primaryTriads
+        chords = [1, 4, 5]
+        secondaryTriads = [2, 3, 6]
         if valence > 7.5:
-            chords.append(primaryTriads[0])
-        elif valence > 5 and valence <= 7.5:
-            chords += intermediateTriads
-        elif valence <= 5:
-            chords.append(random.choice(intermediateTriads))
+            return chords
+        if valence >= 5:
             chords.append(random.choice(secondaryTriads))
-        return chords 
-
-    def getSuggestedChords2(self):
-        return [1, 2, 3, 4, 5, 6]
-
-    def getProgression(self, availableChords: list[list[int]], melodyDegrees: list[int]):
-        startingChords = intersection([1, 4, 5, 6], availableChords[0])
-        progression = [random.choice(startingChords)]
-        for i in range(1, len(availableChords)):
-            progression.append(self.getNextChord(availableChords[i], melodyDegrees[i]))
-        return progression
+            return chords
+        if valence < 5:
+            chords.append(random.choice(secondaryTriads))
+            chords.append(random.choice(secondaryTriads))
+            return chords
 
     def getNextChord(self, availableChords: list[int], melodyDegree: int):
         if self.hasTension:
-            availableChords = self.getChordToneChords(melodyDegree)
+            availableChords = intersection(self.getChordToneChords(melodyDegree), availableChords)
             self.hasTension = False
         inter = intersection(primaryChordProgressions[self.currentChord], availableChords)
         if inter == []:
@@ -114,7 +104,7 @@ class MelodyModule():
 
     def getAvailableDegrees(self, chord: int, melodyDegree: int):
         availableDegrees = []
-        if melodyDegree in chordDict[chord]:
+        if melodyDegree in chordDict[chord] and not self.hasTension:
             availableDegrees = copy.copy(extendedChordDict[chord])
             availableDegrees.remove(melodyDegree)
         else:

@@ -13,7 +13,7 @@ def main():
     seed = random.randint(0, sys.maxsize)
     random.seed(seed)
     print(seed)
-    showVA = False
+    showVA = True
 
     soprano = Voice(VoiceGroup.SOPRANO)
     alto    = Voice(VoiceGroup.ALTO)
@@ -24,18 +24,18 @@ def main():
     MelodyModule(compositionS, soprano)
 
     compositionB = copy.deepcopy(compositionS)
-    HarmonyModule(compositionB, bass, soprano)
+    HarmonyModule(compositionB, bass)
 
     compositionA = copy.deepcopy(compositionB)
-    HarmonyModule(compositionA, alto, soprano)
+    HarmonyModule(compositionA, alto)
     
     compositionT = copy.deepcopy(compositionA)
-    HarmonyModule(compositionT, tenor, soprano)
+    HarmonyModule(compositionT, tenor)
     
-    sopranoStream = getStream(compositionS, soprano.voiceGroup)
-    altoStream = getStream(compositionA, alto.voiceGroup)
-    tenorStream = getStream(compositionT, tenor.voiceGroup)
-    bassStream = getStream(compositionB, bass.voiceGroup)
+    sopranoStream   = getStream(compositionS, soprano.voiceGroup)
+    altoStream      = getStream(compositionA, alto.voiceGroup)
+    tenorStream     = getStream(compositionT, tenor.voiceGroup)
+    bassStream      = getStream(compositionB, bass.voiceGroup)
     showStream(sopranoStream, altoStream, tenorStream, bassStream)
     # checkChords(compositionS, compositionA, compositionT, compositionB)
 
