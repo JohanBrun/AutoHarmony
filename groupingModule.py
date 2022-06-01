@@ -40,12 +40,12 @@ class PhraseGroup:
         self.numBaseGroups = numGroups
         self.groups: list[PhraseSubGroup] = []
         contour = self.buildContour()
-        meanVs, meanAs = self.generateMeanVAs()
+        meanVs, meanAs = self.generateVAMeans()
         for i in range(self.numGroups - 1):
             self.groups.append(PhraseSubGroup(self.numBaseGroups, (meanVs[i], meanAs[i]), contour[i]))
         self.groups.append(EndingPhrase(self.numBaseGroups, (meanVs[-1], meanAs[-1]), contour[-1]))
 
-    def generateMeanVAs(self) -> tuple[list[float], list[float]]:
+    def generateVAMeans(self) -> tuple[list[float], list[float]]:
         meanValence, meanArousal = rng.uniform(0, 10), rng.uniform(-10, 10)
         return (
             rng.normal(meanValence, 0.1, self.numGroups), rng.normal(meanArousal, 0.1, self.numGroups)

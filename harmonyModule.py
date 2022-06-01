@@ -3,7 +3,7 @@ import random
 
 from numpy import sign
 from groupingModule import BaseGroup, SectionGroup
-from localTypes import Direction, Voice, Motion, VoiceGroup, chordDict, primaryChordProgressions, secondaryChordProgressions
+from localTypes import Direction, Voice, Motion, VoiceGroup
 from util import degreeOperator, getMidiValueFromScaleDegree, intersection
 
 class HarmonyModule:
@@ -99,20 +99,13 @@ class HarmonyModule:
         return closestDegree
 
     def findClosestOctave(self, currentDegree: int, previousDegree: int, octave: int):
-        previousNote = getMidiValueFromScaleDegree(previousDegree, 0) + 12 * octave
-        currentNote = getMidiValueFromScaleDegree(currentDegree, 0) + 12 * octave
+        previousNote = getMidiValueFromScaleDegree(previousDegree) + 12 * octave
+        currentNote = getMidiValueFromScaleDegree(currentDegree) + 12 * octave
         if (currentNote - previousNote > 6 and currentNote - 12 >= self.voice.voiceRange[0]) or currentNote > self.voice.voiceRange[1]:
             octave -= 1
         elif (currentNote - previousNote < -6 and currentNote + 12 <= self.voice.voiceRange[1]) or currentNote < self.voice.voiceRange[0]:
             octave += 1
         return octave
-
-    def updateavailableDegrees(self, degree: int, chords: list[str]):
-        newChords = []
-        for key in chords:
-            if degree in chordDict[key]:
-                newChords.append(key)
-        return newChords
 
     def hasCommodDegree(self, chordDegrees: list[list[int]]):
         degrees = chordDegrees[0]
@@ -136,7 +129,7 @@ class HarmonyModule:
         return availableDegrees
 
     def isLeapTooLarge(self, degree, octave, nextDegree, nextOctave):
-        midiValue = getMidiValueFromScaleDegree(degree, 0) + 12 * octave
-        nextMidiValue = getMidiValueFromScaleDegree(nextDegree, 0) + 12 * nextOctave
+        midiValue = getMidiValueFromScaleDegree(degree) + 12 * octave
+        nextMidiValue = getMidiValueFromScaleDegree(nextDegree) + 12 * nextOctave
         return abs(midiValue - nextMidiValue) > 7
             

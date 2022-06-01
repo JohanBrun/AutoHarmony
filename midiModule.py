@@ -34,7 +34,7 @@ def showStream(*voiceStreams: stream.Stream):
     s.write('midi', 'composition.midi')
 
 def getNoteFromDegree(degree: int, octave: int, ks: key.KeySignature):
-    n = note.Note(getMidiValueFromScaleDegree(degree, 0) + octave * 12)
+    n = note.Note(getMidiValueFromScaleDegree(degree) + octave * 12)
     n.pitch.accidental = ks.accidentalByStep(n.step)
     return n
 

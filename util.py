@@ -6,9 +6,9 @@ def getRoot(keySignature: int):
     return root
 
 def getMidiValue(degree, octave):
-    return getMidiValueFromScaleDegree(degree, 0) + 12 * octave
+    return getMidiValueFromScaleDegree(degree) + 12 * octave
 
-def getMidiValueFromScaleDegree(degree: int, ks: int):
+def getMidiValueFromScaleDegree(degree: int, ks: int = 0):
     majorScale = (0, 2, 4, 5, 7, 9, 11)
     return getRoot(ks) + majorScale[degree - 1]
     

@@ -41,7 +41,7 @@ class Voice:
         self.startOctave = math.ceil((3 * self.voiceRange[0] + self.voiceRange[1]) / 48)
 
     def isOutsideRange(self, degree: int, octave: int):
-        midiValue = getMidiValueFromScaleDegree(degree, 0) + octave * 12
+        midiValue = getMidiValueFromScaleDegree(degree) + octave * 12
         return midiValue < self.voiceRange[0] or midiValue > self.voiceRange[1]
 
 chordDict: dict = {
